@@ -25,6 +25,10 @@
 % Therefore, a short form for the running title is supplied here:
 \icmltitlerunning{TimelyWimely: Classifying Timely And Timeless Questions}
 
+
+\newcommand{\question}[1]{``#1''}
+\newcommand{\ans}[1]{\underline{#1}}
+
 \begin{document}
 
 \twocolumn[
@@ -75,14 +79,17 @@
 %\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-	Classifying timely and timeless questions can be a useful task for natural
-	language processing. We present a method for determining if a question is
-	timely or timeless using a pretrained BERT model and the Google NQ dataset.
-	Past revisions of the source Wikipedia page are retrieved and the answers are
-	compared to see how they change over time. We show that we can find timely
-	questions with greater than chance probability and timeless questions with
-	high accuracy using our method.
-
+  Question answering datasets are often tied to a particular time and knowledge base.
+  %
+  This paper examines whether questions in common \abr{qa} datasets
+  are timeless (the answer is invariant to changing the knowledge
+  base) or timely (the answer changes when the knowledge base
+  changes).
+  %
+  After identifying whether a question is timeless or timely and
+  analyzing what makes a question timely, we build a classifier to
+  detect these questions automatically, allowing \abr{qa} systems to
+  detect when their knowledge base may be stale.
 \end{abstract}
 
 \section{Problem Overview}
@@ -92,16 +99,16 @@ The objectives are to understand questions posed in natural language and
 retrieve relevant information within a database or text to answer them. The
 answers to some questions remain unchanged and static regardless of the time
 they are asked. We will refer to these questions as timeless questions. As
-examples, the answers to the questions “When was the Magna Carta signed” and
-“Who was the first person to walk on the moon” do not change over time. On the
+examples, the answers to the questions \question{When was the Magna Carta signed} and
+\question{Who was the first person to walk on the moon} do not change over time. On the
 other hand, some questions will have different answers based on when they are
 asked, and we will refer to these as timely questions. To illustrate, the answer
-to “Who won the world cup” will change every four years, and the answer to “How
-many farms are there in Alaska” will vary depending on how many Alaskan farms
+to \question{Who won the world cup} will change every four years, and the answer to \question{How
+many farms are there in Alaska} will vary depending on how many Alaskan farms
 exist at the asking time.
 
 The purpose of our project is to build a pipeline that determines the
-“timeliness” of questions, as understanding whether a question is timely or
+``timeliness'' of questions, as understanding whether a question is timely or
 timeless could be useful for accurate question answering. When an individual
 asks a timely question, they would expect the system to return the most recent
 answer. Detecting timeliness in queries is a nifty skill for voice assistant
@@ -109,24 +116,34 @@ software and chatbots; if a question is understood to be timely, updated answers
 could be routinely checked to provide accurate results for possible future
 queries.
 
+\section{Mutatis Mutandis}
+\label{sec:definition}
 
-\subsection{Related Work}
-
-There has been extensive work examining methods to improve temporal reasoning in
-natural language processing tasks such as question-answering. The 2002 TERQAS
-workshops spurred initial work in this area and aimed to answer temporally-based
-questions about events and entities in articles and lead to the development of
-TimeML, a set of rules for encoding temporal information in documents
-\cite{radev2002using}. \cite{breck2000another} was one of the first to build a
-QA system which incorporated temporal information. \cite{saquete2009enhancing}
-explored more complex strategies to incorporate temporal information.
-Specifically, they proposed a method to first identify temporal questions and
-decompose them into simpler questions. They then obtain answers to this set of
-questions, and then recombine them following the original temporal relationships
-to generate the complete answer. Recently, the TEQUILA method was described by
-\cite{jia2018tequila} as an extension of \cite{saquete2009enhancing}. Thus, our
-work focuses on improving the first task of better identifying temporal
-questions.
+Before beginning our empirical analysis, we first define two broad
+types of questions: timeless and timely questions.
+%
+More formally, a {\bf timeless} question~$q^{s}$ is a question for
+which an answer~$a$ is consistent regardless of when~$t$ a
+dataset~$\mathcal{D}_t$ was gathered.
+%
+In other words, the answer is static (or not present) but does not
+change when an answer is found from a \abr{qa} system~$f$ on a
+dataset:\footnote{For the ease of exposition we ignore \abr{qa}
+mistakes and variation in answer form.  A more rigorous definition
+would define probabilities and answer equivalence sets.}
+%
+\begin{equation}
+  \forall_{t,t'} \left[ f(q^{s}, \mathcal{D}_t) = f(q^{s},
+    \mathcal{D}_{t'}) \vee f(q^{s}, mathcal{D}_{t'}) = \emptyset
+    \right].
+\end{equation}
+%
+However, a timely question $q^{v}$ does vary:
+%
+\begin{equation}
+  \exists_{t,t} s.t. f(q^{v}, \mathcal{D}_t) \not = f(q^{v},
+  \mathcal{D}_{t'}).
+\end{equation}
 
 \section{Methodology}
 \label{methodology}
@@ -134,22 +151,24 @@ questions.
 
 \subsection{Dataset}
 \label{dataset}
-We used Google’s Natural Questions (NQ) dataset \cite{nqdataset}. The dataset
-has been used for open-domain question answering research, and is “the first
-large publicly available dataset to pair real user queries with high quality
-annotations of answers in documents”. It consists of 307,373 anonymized natural
-questions asked via the Google search engine, and each question is paired with
-the full HTML markup of a Wikipedia page. Human annotators have marked the
-location of long and short answers to each question. A model that is trained on
-the NQ dataset is required to read the full Wikipedia article, and locate the
-answers. From our analysis, we estimate that less than 10\% of the questions
-were timely questions.
 
-SQuAD (Stanford Question Answering Dataset) 2.0 \cite{squaddataset} is a similar
-dataset that we explored. However, it has some key differences; questions in
-SQuAD have been artificially generated (unlike the real user queries of NQ), and
-each question is paired with a text paragraph from a Wikipedia page (whereas NQ
-provides the full page text).
+\jbgcomment{Cite followon datasets}
+
+We used Google’s Natural Questions (NQ) dataset \cite{nqdataset}. The
+dataset has been used for open-domain question answering research, and
+is “the first large publicly available dataset to pair real user
+queries with high quality annotations of answers in documents”. It
+consists of 307,373 anonymized natural questions asked via the Google
+search engine, and each question is paired with the full HTML markup
+of a Wikipedia page. Human annotators have marked the location of long
+and short answers to each question. A model that is trained on the NQ
+dataset is required to read the full Wikipedia article, and locate the
+answers. From our analysis, we estimate that less than 10\% of the
+questions were timely questions.
+
+Natural Questions is unique becuase it has been updated twice: once by
+\abr{nq}'s original authors for the Efficient \abr{qa} competition and
+by \abr{ai2} by a new collection of questions from Google.
 
 
 \subsection{String Comparison Metrics}
@@ -416,31 +435,39 @@ in the past 10 years, then our methodology will produce a false negative.
 
 % Acknowledgements should only appear in the accepted version.
 
-\section{Future Work}
+
+\section{Related Work}
+
+There has been extensive work examining methods to improve temporal reasoning in
+natural language processing tasks such as question-answering. The 2002 TERQAS
+workshops spurred initial work in this area and aimed to answer temporally-based
+questions about events and entities in articles and lead to the development of
+TimeML, a set of rules for encoding temporal information in documents
+\cite{radev2002using}. \cite{breck2000another} was one of the first to build a
+QA system which incorporated temporal information. \cite{saquete2009enhancing}
+explored more complex strategies to incorporate temporal information.
+Specifically, they proposed a method to first identify temporal questions and
+decompose them into simpler questions. They then obtain answers to this set of
+questions, and then recombine them following the original temporal relationships
+to generate the complete answer. Recently, the TEQUILA method was described by
+\cite{jia2018tequila} as an extension of \cite{saquete2009enhancing}. Thus, our
+work focuses on improving the first task of better identifying temporal
+questions.
+
+
+SQuAD (Stanford Question Answering Dataset) 2.0 \cite{squaddataset} is a similar
+dataset that we explored. However, it has some key differences; questions in
+SQuAD have been artificially generated (unlike the real user queries of NQ), and
+each question is paired with a text paragraph from a Wikipedia page (whereas NQ
+provides the full page text).
+
+
+
+\section{Conclusion and Future Work}
 With a longer project timeline, we would have liked to retrain a BERT model
 ourselves on the NQ dataset to get a more accurate model. In addition, once we
 have a more accurate set of timely and timeless questions, we would train a
 language model to classify questions based on their timeliness.
-
-\section{Contributions}
-\subsection{Vatsal Agarwal}
-Vatsal helped with dataset processing and analysis, as well as the presentation
-and paper work.
-\subsection{Pauline Comising}
-Pauline ran the Google Trends baseline, helped with Wikimedia API integration,
-implemented BLEU score calculations, and helped with presentation and paper
-writing.
-\subsection{Harish Kumar}
-Harish ran the Google Trends baseline. He also helped with presentation and
-paper writing.
-\subsection{Madhava Paliyam}
-Madhava ran the BERT-SQUAD model on the train and development datasets. He
-implemented the comparisons using the {\tt fuzzywuzzy} package. He also helped
-with the analysis.
-
-\subsection{Nikhil Pateel}
-Nikhil worked on the Google Trends baseline, Wikimedia API integration, as well
-as presentation and paper preparation.
 
 
 \section*{Acknowledgements}
