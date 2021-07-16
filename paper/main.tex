@@ -145,6 +145,8 @@ However, a timely question $q^{v}$ does vary:
   \mathcal{D}_{t'}).
 \end{equation}
 
+\jbgcomment{Given this more formal definition, }
+
 \section{Methodology}
 \label{methodology}
 
@@ -152,9 +154,9 @@ However, a timely question $q^{v}$ does vary:
 \subsection{Dataset}
 \label{dataset}
 
-\jbgcomment{Cite followon datasets}
+\jbgcomment{Cite followon datasets, incorporate them into the analysis as test data}
 
-We used Google’s Natural Questions (NQ) dataset \cite{nqdataset}. The
+We use Google’s Natural Questions (NQ) dataset \cite{nqdataset}. The
 dataset has been used for open-domain question answering research, and
 is “the first large publicly available dataset to pair real user
 queries with high quality annotations of answers in documents”. It
@@ -168,12 +170,17 @@ questions were timely questions.
 
 Natural Questions is unique becuase it has been updated twice: once by
 \abr{nq}'s original authors for the Efficient \abr{qa} competition and
-by \abr{ai2} by a new collection of questions from Google.
+by \abr{ai2} by a new collection of questions from Google.  The source
+of the questions are the same, which allows these followon datasets to
+serve as test sets to validate our ability to detect timely questions.
 
 
 \subsection{String Comparison Metrics}
 \label{string methods}
 
+\jbgcomment{Before going into the string measurement distances,
+  motivate why you need them (need to compare answers) and then
+  discuss why ``standard'' things like exact match don't work.}
 
 \subsubsection{Levenshtein Distance}
 \label{fuzzy}
@@ -207,6 +214,10 @@ argument is a 1-gram, often a word.
 \subsection{Pipeline}
 \label{pipeline}
 
+\jbgcomment{I think this would be stronger by working through an
+  example.  take a question, find the relevant passage, and show how
+  it changes when there's a timely question.}
+
 \subsubsection{Answer Prediction}
 Retrieving answers for all revisions of a single question worked as follows.
 First, for each sample in a 20,000 question subset of the NQ train dataset, the
@@ -228,6 +239,9 @@ By feeding each year’s Wikipedia article revision and the question text to the
 model, we acquire an answer for each year.
 
 \subsubsection{Answer Filtering}
+
+\jbgcomment{Give the main idea first, then go into details like redirects and things like that.}
+
 After getting an answer for each year, we hypothesized that a timely question
 would have answers that change year to year, while a timeless question would
 have similar answers no matter which year was used as the context. However,
@@ -341,6 +355,8 @@ better capture semantic similarity.
 \subsection{BLEU Results}
 \label{bleu results}
 
+\jbgcomment{It seems like it might be better to cut the edit distance stuff and just focus on BLEU?}
+
 Using BLEU score metrics, identifying timeless vs timely questions was more
 successful. High BLEU scores corresponded to timeless questions and lower ones
 were indicative as timely questions. Similar to Levenshtein, the highly
@@ -424,6 +440,8 @@ to issues with Wikimedia's API. We ended up filtering roughly 10,000 out of the
 20,000 total questions because of these issues. An additional 7,000 were
 filtered from poor model performance.
 
+\jbgcomment{Would running DPR over the whole dump address the filtering problems?}
+
 Even with a perfect pre--trained model, we still run into some key limitations
 with our methodology. The first is that we assume that the answer to any
 question in the dataset can be found within the first 25 paragraphs. An analysis
@@ -461,6 +479,10 @@ SQuAD have been artificially generated (unlike the real user queries of NQ), and
 each question is paired with a text paragraph from a Wikipedia page (whereas NQ
 provides the full page text).
 
+
+\jbgcomment{Even if there aren't more datasets for the workshop
+  submission, would be good to talk about other datasets, using DPR to
+  improve recall of timely questions.}
 
 
 \section{Conclusion and Future Work}
