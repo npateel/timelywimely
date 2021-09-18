@@ -244,33 +244,42 @@ model, we acquire an answer for each year.
 
 After getting an answer for each year, we hypothesized that a timely question
 would have answers that change year to year, while a timeless question would
-have similar answers no matter which year was used as the context. However,
-before we could identify changes with the answers, we had to account for errors
-with the model’s ability to answer questions. First, we removed any questions in
-which any of the answers returned a page that did not exist, or was redirected.
-Although a page that did not exist could indicate a timely question, we decided
-to remove those in case there was a problem with the Wikipedia link or the
-model. \begin{figure*}[ht]
-	\begin{center}
-		\includegraphics[width=5in]{timeless leven.png}
-		\includegraphics[width=5in]{timely leven.png}
-		\includegraphics[width=5in]{leven false pos.png}
-		\includegraphics[width=5in]{leven_false_neg.PNG}
+have similar answers regardless of the context's year. However, before we could
+identify changes with the answers, we had to account for model errors.
+Conceptually, the answer filtering step removes questions where
+model/methodology error could contribute to high answer variance. In filtering
+these questions out, we could more confidently attribute variance to timeliness.
+We defined model/methodology error as Wikipedia page-retrieval failure at any
+timestamp and/or the model's inability to output the ground truth answer using
+the most current Wikipedia page. This sought to reduce confounding variables in
+answer variance and create a more accurate classifier.
+
+As mentioned, we removed any questions where Wikipedia retrieval returned a page
+that did not exist, or was redirected. Although a previously non-existent page
+could indicate a timely question, we decided to remove those in case there was
+a problem with the Wikipedia link or the model. After this initial filtering,
+our subset of 20,000 questions and answers was reduced to 10,183 samples.
+\begin{figure*}[ht]
+    \begin{center}
+        \includegraphics[width=5in]{timeless leven.png}
+        \includegraphics[width=5in]{timely leven.png}
+        \includegraphics[width=5in]{leven false pos.png}
+        \includegraphics[width=5in]{leven_false_neg.PNG}
 	\end{center}
-	\caption{Levenshtein Examples (top is timeless, middle is timely, third is false positive, bottom is false negative).}
-	\label{fig:levenshtein_examples}
+  \caption{Levenshtein Examples (top is timeless, middle is timely, third is false positive, bottom is false negative).}
+  \label{fig:levenshtein_examples}
 \end{figure*}
 
-After this initial filtering, our subset of 20,000 questions and answers was
-reduced to 10,183 samples. Then, using the string Levenshtein distance, we
-calculated the difference of each answer to the correct short answer provided in
-the NQ dataset. Some questions had multiple correct short answers, in which case
-we compared to the ground truth that had the closest match to the predicted
-answer. Any samples which had an incorrect answer using the predicted answer
-from the original HTML in the question were filtered out from our data. We
-defined an incorrect answer as having a string comparison score of at least 70.
-After removing these samples, we were left with a dataset of 3,408 samples to
-work with.
+Next, because the SQuAD model wasn't pretrained on the NQ dataset, we tested the
+model's ability to correctly answer the question using NQ's original HTML. Using
+the string Levenshtein distance, we calculated the difference between each
+model-predicted answer and the NQ dataset's ground truth short answer. Some
+questions had multiple correct short answers, in which case we compared to the
+ground truth that had the closest match to the predicted answer. Any samples
+which had an incorrect answer using the predicted answer from the original HTML
+in the question were filtered out from our data. We defined an incorrect answer
+as having a string comparison score of at least 70. After removing these
+samples, we were left with a dataset of 3,408 samples to work with. 
 
 \subsubsection{Answer Scoring}
 We defined the string distance score using the functions in the {\tt fuzzywuzzy}
