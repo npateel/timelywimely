@@ -182,6 +182,17 @@ serve as test sets to validate our ability to detect timely questions.
   motivate why you need them (need to compare answers) and then
   discuss why ``standard'' things like exact match don't work.}
 
+In order to determine whether answers to a question change over time, they must
+be compared. While exact matching is an obvious option, it doesn't allow nuances
+in representing names, places, and more. To give examples of common answer
+types, "France" and "Paris France" wouldn't match, nor would "Dolly Parton" and
+"Parton". With this binary, all-or-nothing approach to answer comparison,
+answers representing the same idea aren’t recognized as similar. For these
+reasons, we chose to compare answers using Levenshtein Distance and BLEU scores.
+Both measurements provide matching scores on a scale from 0 to 100, allowing
+recognition for varying amounts of matching content. This is especially
+important for longer answers, which are also included within the NQ dataset.
+
 \subsubsection{Levenshtein Distance}
 \label{fuzzy}
 
@@ -279,7 +290,7 @@ ground truth that had the closest match to the predicted answer. Any samples
 which had an incorrect answer using the predicted answer from the original HTML
 in the question were filtered out from our data. We defined an incorrect answer
 as having a string comparison score of at least 70. After removing these
-samples, we were left with a dataset of 3,408 samples to work with. 
+samples, we were left with a dataset of 3,408 samples to work with.
 
 \subsubsection{Answer Scoring}
 We defined the string distance score using the functions in the {\tt fuzzywuzzy}
