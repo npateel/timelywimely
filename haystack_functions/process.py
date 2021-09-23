@@ -25,7 +25,6 @@ def get_haystack_format(directory):
                                 'url': parsed['url']}}
                         documents.append(d)
                         i += 1
-    print(documents[0])
     return documents
 
 '''
