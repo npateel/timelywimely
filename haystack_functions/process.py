@@ -19,11 +19,15 @@ def get_haystack_format(directory):
                 parsed = ast.literal_eval(line)
                 if 'text' in parsed:
                     if parsed['text'] != '':
-                        documents.append(parsed)
+                        d = {
+                        'text': parsed['text'],
+                        'meta': {'name': parsed['title'],
+                                'url': parsed['url']}}
+                        documents.append(d)
                         i += 1
-
+    print(documents[0])
     return documents
-    
+
 '''
 Usage: python <process.py> <directory with processed dump files>
 '''
