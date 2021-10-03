@@ -1,8 +1,4 @@
-# Google AI Language
+# Timely Wimely
+Detecting timely and timeless questions using wikidumps, dense passage retrieval, and context based question answering. 
 
-Shared repository for open-sourced projects from the [Google AI Language](https://ai.google/research/teams/language/) team.
-
-This is not an official Google product.
-
-Print here
-https://storage.cloud.google.com/natural_questions/v1.0-simplified/nq-dev-all.jsonl.gz
+https://docs.google.com/document/d/1C3hQ9U3ZvxlOxWG30sV90PbaqEAV8UWsUrOAa-JAftg/edit
