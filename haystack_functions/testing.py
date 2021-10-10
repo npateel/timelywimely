@@ -11,6 +11,13 @@ from haystack.retriever.dense import DensePassageRetriever
 from haystack.reader import FARMReader
 from haystack import Pipeline
 
+def dumper(obj):
+    try:
+        return obj.to_dict()
+    except:
+        return obj.__dict__
+
+
 def test(p, json_file, max_ans = 1, min_conf_score = .7, jsonify = false):
     # p: haystack Pipeline
     # json_file: take a wild guess, lol just name
@@ -49,6 +56,6 @@ def test(p, json_file, max_ans = 1, min_conf_score = .7, jsonify = false):
     if jsonify:
         d = {"data": outputs}
         with open('predictions.json', 'w') as fp:
-            json.dump(d, fp)
+            json.dump(d, fp, default=dumper)
 
     return outputs
