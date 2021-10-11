@@ -36,7 +36,7 @@ def test(p, json_file, max_ans = 1, min_conf_score = .7, jsonify = false):
         q = example["question"]
         res = p.run(query=q, params={"retriever": {"top_k": 1}})
         # add get json file format code
-        # res = smth
+        res = dumper(res)
         answers = []
         topics = {}
         # go through every reader-predicted answer and store answer and topic
