@@ -91,6 +91,7 @@ def dfOverTime(all_outputs, years, topic = True):
 
     # populate vals of each col one row at a time
     for q, rest in base_output.items():
+        print(q)
         acc_col_vals["Question"].append(q)
         acc_col_vals["GT Answer"].append(rest["gt_ans"])
         acc_col_vals["GT Topic"].append(rest["gt_topic"])
@@ -131,7 +132,7 @@ def dfOverTime(all_outputs, years, topic = True):
             acc_col_vals[col_bleu].append(max_bleu)
             ref.append(best_ans.split(" "))
 
-
+    print(acc_col_vals["Question"])
     for col_name, col_data in acc_col_vals.items():
         df[col_name] = col_data
 
@@ -150,7 +151,7 @@ def dfGTcompare(all_outputs, years, topic = True):
     df = pd.DataFrame(columns = all_cols)
 
     base_output = all_outputs[0]
-    
+
     acc_col_vals = dict.fromkeys(all_cols, [])
 
     for q, rest in base_output.items():
@@ -190,6 +191,7 @@ def dfGTcompare(all_outputs, years, topic = True):
 
 
     for col_name, col_data in acc_col_vals.items():
+
         df[col_name] = col_data
 
     return df
