@@ -66,7 +66,7 @@ def test(p, json_file, max_ans = 1, min_conf_score = .7, jsonify = False):
 
     return outputs
 
-def dfOverTime(all_outputs, years, topic = True):
+def dfOverTime(all_outputs, years, topic = True, withGT = False):
     # allOutputs: a list of all the outputs that come from test() for all years
     # years: a list of all the dates in the same order they're put in allOutputs
     #       for the purpose of naming columns
@@ -113,6 +113,8 @@ def dfOverTime(all_outputs, years, topic = True):
 
         # add all first year predicted answers to ref for bleu, is this ok?
         ref = [a.split(" ") for a in rest["predicted_ans"]]
+        if withGT:
+            ref = ref + [a.split(" ") for a in rest["gt_ans"]]
         if len(ref) == 0:
             ref.append([])
         # for the rest of the years add answer and bleu score
@@ -150,6 +152,8 @@ def dfOverTime(all_outputs, years, topic = True):
 
     for col_name, col_data in acc_col_vals.items():
         df[col_name] = col_data
+
+    df['max - min'] = df.filter(regex = r'Bleu Score').max(axis = 1) - df.filter(regex = r'Bleu Score').min(axis = 1)
 
     return df
 
@@ -220,6 +224,8 @@ def dfGTcompare(all_outputs, years, topic = True):
     for col_name, col_data in acc_col_vals.items():
         df[col_name] = col_data
 
+    df['max - min'] = df.filter(regex = r'Bleu Score').max(axis = 1) - df.filter(regex = r'Bleu Score').min(axis = 1)
+
     return df
 
 
@@ -238,6 +244,9 @@ if __name__ == "__main__":
 
     df = dfOverTime(dicts, years)
     df.to_csv("../haystack/bleuOvertime.csv")
+
+    df = dfOverTime(dicts, years, withGT = True)
+    df.to_csv("../haystack/bleuBoth.csv")
 
     df = dfGTcompare(dicts, years)
     df.to_csv("../haystack/bleuGT.csv")
