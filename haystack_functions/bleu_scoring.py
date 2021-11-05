@@ -8,63 +8,8 @@ import ast
 import glob
 import pandas as pd
 import re
-#from haystack.document_store import FAISSDocumentStore
-#from haystack.retriever.dense import DensePassageRetriever
-#from haystack.reader import FARMReader
-#from haystack import Pipeline
 from nltk.translate.bleu_score import sentence_bleu
 
-
-def dumper(obj):
-    try:
-        return obj.to_dict()
-    except:
-        return obj.__dict__
-
-
-def test(p, json_file, max_ans = 1, min_conf_score = .7, jsonify = False):
-    # p: haystack Pipeline
-    # json_file: take a wild guess, lol just name
-
-    # combine path
-    json_path = os.path.join("../datasets", json_file)
-
-    # open json file into dict
-    with open(json_path) as jf:
-        dataset = json.load(jf)
-
-    outputs = {}
-    # go through all qs and store
-    for example in dataset["data"]:
-        output = {}
-        q = example["question"]
-        res = p.run(query=q, params={"retriever": {"top_k": 1}})
-        # add get json file format code
-        res = dumper(res)
-        answers = []
-        topics = {}
-        # go through every reader-predicted answer and store answer and topic
-        for answer in res["answers"]:
-            if answer["score"] >= min_conf_score and len(answers) < max_ans:
-                answers.append(answer['answer'])
-                topics[answer['answer']] = answer["meta"]["name"]
-                contexts[answer['answer']] = answer['context']
-
-        # output["question"] = q
-        output["gt_ans"] = example["answers"]
-        # think about how answer could be just a string
-        output["predicted_ans"] = answers
-        output["gt_topic"] = example["topic"]
-        output["predicted_topic"] = topics
-
-        outputs[q] = output
-
-    if jsonify:
-        d = {"data": outputs}
-        with open('predictions.json', 'w') as fp:
-            json.dump(d, fp, default=dumper)
-
-    return outputs
 
 def dfOverTime(all_outputs, years, topic = True, withGT = False):
     # allOutputs: a list of all the outputs that come from test() for all years

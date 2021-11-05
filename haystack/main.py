@@ -20,6 +20,7 @@ from haystack.retriever.dense import DensePassageRetriever
 if __name__ == "__main__":
     year = sys.argv[1]
     dataset = sys.argv[2]
+    output_path = sys.argv[3]
     faiss = os.path.join(year, 'wiki_dump_embeddings.faiss')
     sql_url = 'sqlite:///' + os.path.join(year, 'faiss_document_store.db')
 
@@ -51,4 +52,4 @@ if __name__ == "__main__":
     p = Pipeline()
     p.add_node(component=retriever, name="ESRetriever1", inputs=["Query"])
     p.add_node(component=reader, name="QAReader", inputs=["ESRetriever1"])
-    testing.test(p, dataset, jsonify=True)
+    testing.test(p, dataset, jsonify=True, output_file=output_path)
