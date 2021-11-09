@@ -177,21 +177,22 @@ def dfGTcompare(all_outputs, years, topic = True):
 if __name__ == "__main__":
     # get list of os things
     haystacks = os.listdir("../haystack")
-    r = re.compile("^20[12][0-9]")
+    r = re.compile("^20[012][0-9]")
     years = list(filter(r.match, haystacks))
     years.sort()
+    print(years)
     dicts = []
     for year in years:
         json_path = os.path.join("../haystack", year)
-        json_path = os.path.join(json_path, "predictions.json")
+        json_path = os.path.join(json_path, "nq_predictions.json")
         with open(json_path) as jf:
             dicts.append(json.load(jf))
 
     df = dfOverTime(dicts, years)
-    df.to_csv("../haystack/bleuOvertime.csv")
+    df.to_csv("../haystack/NQbleuOvertime.csv")
 
     df = dfOverTime(dicts, years, withGT = True)
-    df.to_csv("../haystack/bleuBoth.csv")
+    df.to_csv("../haystack/NQbleuBoth.csv")
 
     df = dfGTcompare(dicts, years)
-    df.to_csv("../haystack/bleuGT.csv")
+    df.to_csv("../haystack/NQbleuGT.csv")
