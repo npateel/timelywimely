@@ -90,6 +90,7 @@ def dfOverTime(all_outputs, years, topic = True, withGT = False):
             acc_col_vals[col_ans].append(best_ans)
             acc_col_vals[col_bleu].append(max_bleu)
             ref.append(best_ans.split(" "))
+            # find syn for best answer and append
         if j == 0 or j == 1:
             print("tada")
             print(acc_col_vals)
@@ -138,6 +139,8 @@ def dfGTcompare(all_outputs, years, topic = True):
         if len(ref) == 0:
             ref.append([])
         # for the rest of the years add answer and bleu score
+        # [["miley", "cyrus"], ["hannah", "montana"]]
+        # put synonyms here
         for i in range(0,len(years)):
             year = years[i]
             col_ans = year + " Predicted"
