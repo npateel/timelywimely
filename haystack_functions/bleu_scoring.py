@@ -187,15 +187,15 @@ if __name__ == "__main__":
     dicts = []
     for year in years:
         json_path = os.path.join("../haystack", year)
-        json_path = os.path.join(json_path, "nq_predictions.json")
+        json_path = os.path.join(json_path, "elastic.json")
         with open(json_path) as jf:
             dicts.append(json.load(jf))
 
     df = dfOverTime(dicts, years)
-    df.to_csv("../haystack/NQbleuOvertime.csv")
+    df.to_csv("../haystack/ElasticOvertime.csv")
 
     df = dfOverTime(dicts, years, withGT = True)
-    df.to_csv("../haystack/NQbleuBoth.csv")
+    df.to_csv("../haystack/ElasticBoth.csv")
 
     df = dfGTcompare(dicts, years)
-    df.to_csv("../haystack/NQbleuGT.csv")
+    df.to_csv("../haystack/ElasticGT.csv")
