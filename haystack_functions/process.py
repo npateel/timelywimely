@@ -13,7 +13,7 @@ from haystack.reader import FARMReader
 from haystack import Pipeline
 
 
-documents = []
+#documents = []
 
 def dumper(obj):
     try:
@@ -21,7 +21,7 @@ def dumper(obj):
     except:
         return obj.__dict__
 
-def get_haystack_format(directory):
+def get_haystack_format(directory, out):
 
     filenames = []
     for filename in glob.iglob(directory + '/**/*', recursive=True):
@@ -30,7 +30,7 @@ def get_haystack_format(directory):
     print(len(filenames))
 
 
-    haystack_file = open('dump.out.jsonl', mode='w')
+    haystack_file = open(out, mode='w')
 
     documents = list(map(lambda x: processFile(x, haystack_file), filenames))
 
@@ -49,23 +49,61 @@ def processFile(filename, out):
                     docs.append(d)
                     json.dump(d, out)
                     out.write('\n')
-    documents.extend(docs)
+    #documents.extend(docs)
 
 
 
 '''
 Usage: python <process.py> <directory with processed dump files>
 '''
+
+def processDump(year):
+    directory = year
+    get_haystack_format(os.path.join(directory, 'dump'), os.path.join(directory, 'dump.jsonl'))
+    print(f"Wrote non empty docs to dump")
+    url = "sqlite:///" + os.path.join(directory, 'faiss_document_store.db')
+    document_store = FAISSDocumentStore(sql_url=url,progress_bar=True,faiss_index_factory_str="Flat")
+    i = 0
+    docs= []
+    with open(os.path.join(directory, 'dump.jsonl')) as f:
+        for line in tqdm(f):
+            i += 1
+            docs.append(json.loads(line))
+            if i == 1000:
+                document_store.write_documents(docs)
+                docs = []
+                i = 0
+    print("Done creating documents")
+
+    document_store.save(os.path.join(directory, "wiki_dump.faiss"))
+    print("Saved document store")
+    document_store = FAISSDocumentStore.load(os.path.join(directory, "wiki_dump.faiss"), sql_url=url, index='document')
+    print("Starting DPR")
+    retriever = DensePassageRetriever(document_store=document_store, query_embedding_model="facebook/dpr-question_encoder-single-nq-base",
+                                      passage_embedding_model="facebook/dpr-ctx_encoder-single-nq-base",
+                                      use_gpu=True, batch_size=64, embed_title=True)
+    print("Updating embeddings...'")
+    document_store.update_embeddings(retriever)
+    document_store.save(os.path.join(directory, "wiki_dump_embeddings.faiss"))
+
+
+
+
+
 if __name__ == "__main__":
-    #directory = sys.argv[1]
-    #get_haystack_format(directory)
-    #print(f"Found {len(documents)} non empty documents in all files.")
+    directory = sys.argv[1]
+    processDump(directory)
+    sys.exit()
+
+
+    get_haystack_format(directory)
+    print(f"Found {len(documents)} non empty documents in all files.")
 
     #document_store = FAISSDocumentStore(similarity="dot_product")
-    #document_store = FAISSDocumentStore(sql_url="sqlite:///faiss_document_store.db",progress_bar=True,faiss_index_factory_str="Flat")
+    document_store = FAISSDocumentStore(sql_url="sqlite:///faiss_document_store.db",progress_bar=True,faiss_index_factory_str="Flat")
     #filename = sys.argv[1]
-    #i = 0
-    #docs = []
+    i = 0
+    docs = []
     #with open(filename) as f:
      #   for line in tqdm(f):
       #      i+= 1

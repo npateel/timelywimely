@@ -1,0 +1,13 @@
+*.faiss
+*.db
+*wiki_*
+*dump.jsonl
+*dump_year.jsonl
+*dpr_eunsol.json
+*nq_open_comparison.json
+*dpr_predictions.json
+*dump.out.jsonl
+*predictions.json
+*__pycache__**
+*mlruns*
+*.ipynb_checkpoints

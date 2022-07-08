@@ -26,7 +26,7 @@ def dumper(obj):
             return obj
 
 
-def test(p, json_file, min_conf_score=0, jsonify=False, output_file="predictions.json"):
+def test(p, json_file, year, min_conf_score=0, jsonify=False, output_file="predictions.json"):
     # p: haystack Pipeline
     # json_file: take a wild guess, lol just name
 
@@ -43,6 +43,7 @@ def test(p, json_file, min_conf_score=0, jsonify=False, output_file="predictions
     for example in tqdm(dataset["data"]):
         output = {}
         q = example["question"]
+        #res = p.run(query=q, params={"retriever": {"top_k": 1, "filters":{ "name": [example['topic']], "year": [year]}}})
         res = p.run(query=q, params={"retriever": {"top_k": 1}})
         # add get json file format code
         res = dumper(res)
